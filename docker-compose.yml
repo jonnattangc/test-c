@@ -1,0 +1,11 @@
+version: "3.3"
+services:
+    cserver:
+      build: .
+      container_name: test-c++
+      volumes:
+        - $PWD:/usr/src/app
+      networks:
+        - db-net
+networks:
+  db-net:
