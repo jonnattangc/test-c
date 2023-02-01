@@ -1,6 +1,7 @@
 anagrama
 base64
 *.zip
+.scannerwork/
 
 # Prerequisites
 *.d
