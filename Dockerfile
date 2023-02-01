@@ -7,7 +7,7 @@ COPY . /usr/src/app
 
 WORKDIR /usr/src/app
 
-RUN g++ base64.cpp -o base64
+RUN g++ cksumcrc32.cpp -o cksumcrc32
 
-CMD ["./base64"]
+CMD ["./cksumcrc32"]
 # CMD [ "tail", "-f", "logs/logs.log" ]
