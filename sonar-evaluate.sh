@@ -21,7 +21,7 @@ export SONAR_TOKEN=f9cb0c86243901a508b93c402ae9ebd421302e00
 
 ./build-wrapper-linux-x86-64 --out-dir bw-output g++ src/cksumcrc32.cpp -o cksumcrc32
 
-sonar-scanner -X \
+sonar-scanner \
   -Dsonar.organization=jonnattan-org \
   -Dsonar.projectKey=jonnattangc_test-c \
   -Dsonar.sources=. \
