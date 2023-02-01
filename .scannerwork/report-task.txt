@@ -1,0 +1,7 @@
+organization=jonnattan-org
+projectKey=jonnattangc_test-c
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.37120
+dashboardUrl=https://sonarcloud.io/dashboard?id=jonnattangc_test-c
+ceTaskId=AYYL10h_wcMllIw5yBok
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AYYL10h_wcMllIw5yBok
