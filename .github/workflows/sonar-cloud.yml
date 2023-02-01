@@ -17,9 +17,6 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v1
-      - name: Run LS
-        run: |
-          ls -la
       - name: Run sonar-validate
         run: |
-          sh sonar-validate.sh
+          sh sonar-evaluate.sh
