@@ -15,6 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file Dockerfile --tag test:v1
     - name: Prueba de que funciona
-      run: docker run --name test-c my-image-name:$(date +%s)
+      run: docker run -d --name test-c test:v1
