@@ -16,6 +16,17 @@ struct ForwarderArgs
     int target_port;
 };
 
+/**
+ * Forward data from a source socket to a destination socket, until there
+ * is no more data to forward.
+ *
+ * @param arg A pointer to an array of two ints, where arg[0] is the source
+ * socket and arg[1] is the destination socket.
+ *
+ * @return NULL.
+ *
+ * @throws No exceptions are thrown.
+ */
 void *forward_data(void *arg)
 {
     int source_fd = ((int *)arg)[0];
@@ -45,6 +56,18 @@ void *forward_data(void *arg)
     return NULL;
 }
 
+/**
+ * Handle an incoming client connection by establishing a connection to the
+ * target host and port, and then forwarding data between the client and target
+ * connections until either of them is closed.
+ *
+ * @param args A pointer to a ForwarderArgs struct containing the client socket,
+ * target host and target port.
+ *
+ * @return NULL.
+ *
+ * @throws No exceptions are thrown.
+ */
 void *handle_client(void *args)
 {
     struct ForwarderArgs *f_args = (struct ForwarderArgs *)args;
@@ -141,6 +164,22 @@ void *handle_client(void *args)
     return NULL;
 }
 
+/**
+ * @brief Main entry point of the program.
+ *
+ * The program takes four parameters:
+ *   1. addr_listen: The address to listen on.
+ *   2. port_listen: The port to listen on.
+ *   3. addr_dst: The address of the target host.
+ *   4. port_dst: The port of the target host.
+ *
+ * The program will listen on the given address and port, and forward any incoming
+ * connections to the target host and port.
+ *
+ * @param argc The number of command line arguments.
+ * @param argv The command line arguments.
+ * @return 0 on success, 1 on failure.
+ */
 int main( int argc, char *argv[]  )
 {
     if( argc < 5 )
