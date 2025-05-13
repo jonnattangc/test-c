@@ -9,12 +9,14 @@
 
 #define BUFFER_SIZE 4096
 
-struct ForwarderArgs
+typedef struct ForwarderArgs
 {
     int client_socket;
     char *target_host;
     int target_port;
-};
+} ForwarderArgs;
+
+typedef struct sockaddr_in SocketAddress;
 
 /**
  * Forward data from a source socket to a destination socket, until there
@@ -193,60 +195,64 @@ int main( int argc, char *argv[]  )
     char * target_host = (char *) &argv[3][0];
     int target_port = atoi((char *) &argv[4][0]);
 
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    socklen_t addrlen = sizeof(address);
+    int server_fd = -1, new_socket = -1;
+    SocketAddress *pAddress;
+    memset(pAddress, 0, sizeof(SocketAddress));
+
+    // tamaño de la direcci'on de red
+    socklen_t addrlen = sizeof(sockaddr_in);
     int opt = 1;
 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        perror("socket() failed in main");
-        return 1;
+        perror("No se puede crear el socket");
+        return EXIT_FAILURE;
     }
 
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+    // permitir reutilizaci'on del socket
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1)
     {
         perror("setsockopt(SO_REUSEADDR) failed in main");
         close(server_fd);
-        return 1;
+        return EXIT_FAILURE;
     }
 
 #ifdef __APPLE__
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) == -1)
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(int)) == -1)
     {
         perror("setsockopt(SO_REUSEPORT) failed in main (macOS)");
         close(server_fd);
-        return 1;
+        return EXIT_FAILURE;
     }
 #else
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) == -1)
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(int)) == -1)
     {
         perror("setsockopt(SO_REUSEPORT) failed in main");
         close(server_fd);
-        return 1;
+        return EXIT_FAILURE;
     }
 #endif
 
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(bind_port);
+    pAddress->sin_family = AF_INET;
+    pAddress->sin_addr.s_addr = INADDR_ANY;
+    pAddress->sin_port = htons(bind_port);
 
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
+    if (bind(server_fd, pAddress, sizeof(SocketAddress)) < 0)
     {
         perror("bind() failed in main");
         close(server_fd);
-        return 1;
+        return EXIT_FAILURE;
     }
 
     if (listen(server_fd, 5) < 0)
     {
         perror("listen() failed in main");
         close(server_fd);
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    printf("[*] Escuchando en %s:%d\n", bind_ip, bind_port);
-    printf("[*] Reenviando tráfico a %s:%d\n", target_host, target_port);
+    printf("[*] Escuchando en %s:%d y ", bind_ip, bind_port);
+    printf("Reenviando tráfico a %s:%d\n", target_host, target_port);
 
     while (1)
     {
