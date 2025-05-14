@@ -6,6 +6,15 @@
 #include <cstring>
 #include <ifaddrs.h> // Necesario para getifaddrs y freeifaddrs
 
+/**
+ * Prints the names of all network interfaces that are up and not loopback.
+ *
+ * This function retrieves a linked list of network interfaces using
+ * getifaddrs, iterates through the list, and prints the name of each
+ * interface that is up (IFF_UP) and not a loopback interface (not IFF_LOOPBACK).
+ * The function uses perror to handle errors from getifaddrs and ensures
+ * that resources are freed using freeifaddrs.
+ */
 void print_eth_names() {
     struct ifaddrs *ifaddr, *ifa;
 
