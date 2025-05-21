@@ -30,6 +30,13 @@ typedef struct sockaddr_in SocketAddrIn;
 typedef struct sockaddr SocketAddr;
 
 
+/**
+ * @brief Funcion que se encarga de forwarder entre un cliente y un servidor.
+ *        El argumento debe ser un puntero a una estructura FwData con los
+ *        sockets y sufijo para la informacion de logs.
+ * @param pArg puntero a una estructura FwData.
+ * @return NULL.
+ */
 void * forward_data( void *pArg ) {   
     FwData *fwData = (FwData *)pArg;
     char buffer[BUFFER_SIZE];
