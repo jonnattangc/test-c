@@ -5,6 +5,7 @@ src/forwarder
 .scannerwork/
 .scannerwork/*
 **/**.dSYM/ 
+**/.DS_Store
 # Prerequisites
 *.d
 
