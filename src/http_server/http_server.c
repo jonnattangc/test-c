@@ -7,8 +7,8 @@
 #include <pthread.h>
 #include <errno.h>
 
-#define BUFFER_SIZE 4096
-#define ADDR_LEN 16
+#include "http_client.h"
+
 #define MAX_QUEUE_SIZE 10
 
 typedef struct sockaddr_in SocketAddrIn;
@@ -20,8 +20,6 @@ int main(int argc, char *argv[]) {
     int server_fd = -1, new_socket = -1, opt = 1, bind_port = 0;
     SocketAddrIn *pAddress = NULL;
     char *bind_ip = NULL;
-    char buffer[BUFFER_SIZE];
-    ssize_t bytes_received = 0, bytes_tx = 0;
 
     if (argc < 3)
     {
@@ -82,57 +80,41 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    char * pDataTx = ( char *) malloc( BUFFER_SIZE );
-
     while (1)
     {
         // se aceptan las conexiones cuando entran
-        printf("[0] Escuchando %s:%d\n", bind_ip, bind_port );
+        printf("[MAIN] Servidor Escuchando %s:%d\n", bind_ip, bind_port );
         if ((new_socket = accept(server_fd, (SocketAddr *)pAddress, &addrlen)) == -1)
         {
             perror("accept() recibio un error, se ignorará");
             continue;
         }
         else
-        {
+        {            
+            Data_Client *pData = (Data_Client *)malloc(sizeof(Data_Client));
+            memset(pData, 0, sizeof(Data_Client));
+            pData->server_socket = server_fd;
+            pData->client_socket = new_socket;
+            pData->connection_port = ntohs(pAddress->sin_port); 
             char * client_ip = (char *)&inet_ntoa(pAddress->sin_addr)[0];
-            printf("[+] Conexión TCP aceptada de %s:%d\n", client_ip, ntohs(pAddress->sin_port));
-            while ((bytes_received = recv(new_socket, buffer, BUFFER_SIZE, 0)) > 0) {
-                printf("[+] %s\n",  buffer );
-                printf("[+] Rx to %d bytes\n", (unsigned int) bytes_received );
-                memset(pDataTx, 0, BUFFER_SIZE );
-                const char *html_body = "{\"texto\": \"Mensaje de Prueba\"}";
-                // 1. Crear la Línea de Estado y las Cabeceras
-                snprintf(pDataTx, BUFFER_SIZE,
-                    "HTTP/1.0 200 OK\r\n"
-                    "Content-Type: application/json\r\n"
-                    "Content-Length: %zu\r\n"
-                    "Connection: close\r\n"
-                    "\r\n" // Línea en blanco esencial para separar cabeceras del cuerpo
-                    "%s",
-                    strlen(html_body), // Usamos strlen para Content-Length + 10 bytes
-                    html_body);
-
-                if ((bytes_tx = send(new_socket, pDataTx, strlen(pDataTx), 0)) == -1) {
-                    perror("  [+] send() failed in forward_data");
-                    break;
-                }else {
-                    printf("[+] Tx to %d bytes\n", (unsigned int) bytes_tx );
-                    // sleep(50);
-                }
+            memcpy(pData->client_host, client_ip, strlen(client_ip));
+            pthread_t thread_process;
+            if (pthread_create(&thread_process, NULL, process_data, pData) < 0)
+            {
+                perror(" [MAIN]pthread_create() failed (client to target)");
+                close(pData->client_socket);
+                free(pData);
             }
-
-            if (bytes_received == -1 && errno != EINTR) {
-                perror("  [+] recv() failed in forward_data");
+            // se le da independencia al hilo
+            if ( 0 != pthread_detach(thread_process)){
+                perror(" [MAIN]pthread_detach() failed (client to target)");
+                close(pData->client_socket);
+                free(pData);
             }
-
-            shutdown(new_socket, SHUT_RDWR);
-            close(new_socket);
         }
     }
     close(server_fd);
     free(pAddress);
-    free(pDataTx);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
