@@ -1,6 +1,6 @@
-anagrama
-base64
-src/forwarder
+/anagrama
+/base64
+src/forwarder/forwarder
 *.zip
 .scannerwork/
 .scannerwork/*
